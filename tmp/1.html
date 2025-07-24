@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>可见时动画效果</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+
+       .section {
+            height: 800px; /* 确保有足够的滚动空间 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2em;
+            color: #333;
+            border-bottom: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+
+       .animated-box {
+            width: 200px;
+            height: 150px;
+            background-color: #4CAF50;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2em;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin: 20px;
+        }
+
+        /* --- 动画关键帧定义 (保持不变) --- */
+        @keyframes smoothRiseFadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @keyframes bounceIn {
+            0% {
+                opacity: 0;
+                transform: translateX(-50px) scale(0.9);
+            }
+            60% {
+                opacity: 1;
+                transform: translateX(10px) scale(1.05);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+        }
+        @keyframes rotateScaleFadeIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.7) rotate(-15deg);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+            }
+        }
+        @keyframes bottomZoomIn {
+            0% {
+                opacity: 0;
+                transform: translateY(80px) scale(0.95);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        @keyframes pureFadeIn {
+            0% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+        @keyframes topSlideZoom {
+            0% {
+                opacity: 0;
+                transform: translateY(-50px) scale(0.9);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        @keyframes scaleDownToOriginal {
+            0% {
+                opacity: 0;
+                transform: scale(1.2);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* --- 动画元素的基础状态类 (关键，确保初始隐藏且具备动画起始变形) --- */
+        /* 这是元素在动画触发前的默认状态 */
+       .animated-element-base {
+            opacity: 0; /* [4, 5] */
+            visibility: hidden; /* [4, 5] */
+            /* 移除 transform: none!important; 以允许具体的动画初始变形生效 [3] */
+            /* transform 属性将由具体的动画类（如.animate-on-visible.animated-element-base）设置 */
+        }
+
+        /* --- 各个动画的初始变形状态 (与.animated-element-base 结合，确保动画平滑开始) --- */
+        /* 这些规则的 specificity 应该高于.animated-element-base */
+       .animate-on-visible.animated-element-base {
+            transform: translateY(30px); /* [5] */
+        }
+       .animate-bounce-in.animated-element-base {
+            transform: translateX(-50px) scale(0.9); /* [5] */
+        }
+       .animate-rotate-scale.animated-element-base {
+            transform: scale(0.7) rotate(-15deg);
+        }
+       .animate-bottom-zoom.animated-element-base {
+            transform: translateY(80px) scale(0.95);
+        }
+       .animate-fade-in.animated-element-base {
+            /* 纯淡入动画通常不需要初始变形，但为了统一结构保留 */
+        }
+       .animate-top-slide-zoom.animated-element-base {
+            transform: translateY(-50px) scale(0.9);
+        }
+       .animate-scale-down-to-original.animated-element-base {
+            transform: scale(1.2);
+        }
+
+        /* --- 动画触发时的类 (.is-visible - 核心触发动画和可见性) --- */
+        /* 当此 Class 被添加时，元素变为可见，并启动 animation */
+       .is-visible {
+            visibility: visible; /* [5] */
+            /* 动画属性应该被添加到具体的动画类中，以确保动画触发 */
+        }
+
+        /* --- 各个动画的触发规则 (与.is-visible 结合) --- */
+        /* 移除!important，通常不需要，因为.is-visible 的添加会触发动画，且这些规则的 specificity 足够高 [3] */
+       .animate-on-visible.is-visible {
+            animation: smoothRiseFadeIn 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+       .animate-bounce-in.is-visible {
+            animation: bounceIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+        }
+       .animate-rotate-scale.is-visible {
+            animation: rotateScaleFadeIn 0.9s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+       .animate-bottom-zoom.is-visible {
+            animation: bottomZoomIn 1.3s ease-in-out forwards;
+        }
+       .animate-fade-in.is-visible {
+            animation: pureFadeIn 1s ease-in forwards;
+        }
+       .animate-top-slide-zoom.is-visible {
+            animation: topSlideZoom 0.8s ease-out forwards;
+        }
+       .animate-scale-down-to-original.is-visible {
+            animation: scaleDownToOriginal 1s ease-in-out forwards;
+        }
+
+        /* --- 动画延迟类 (Animation Delays) --- */
+       .delay-1 {
+            animation-delay: 0.1s;
+        }
+       .delay-2 {
+            animation-delay: 0.2s;
+        }
+       .delay-3 {
+            animation-delay: 0.3s;
+        }
+       .delay-4 {
+            animation-delay: 0.4s;
+        }
+       .delay-5 {
+            animation-delay: 0.5s;
+        }
+       .delay-6 {
+            animation-delay: 0.6s;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="section">
+        <h1>滚动查看动画效果</h1>
+    </div>
+
+    <div class="section">
+        <div class="animated-box animate-on-visible">平滑上升</div>
+        <div class="animated-box animate-bounce-in delay-1">弹跳进入</div>
+    </div>
+
+    <div class="section">
+        <div class="animated-box animate-rotate-scale delay-2">旋转缩放</div>
+        <div class="animated-box animate-bottom-zoom delay-3">底部缩放</div>
+    </div>
+
+    <div class="section">
+        <div class="animated-box animate-fade-in delay-4">纯淡入</div>
+        <div class="animated-box animate-top-slide-zoom delay-5">顶部滑动缩放</div>
+    </div>
+
+    <div class="section">
+        <div class="animated-box animate-scale-down-to-original delay-6">缩小至原尺寸</div>
+    </div>
+
+    <div class="section">
+        <h1>动画结束</h1>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const animationClasses = [
+                '.animate-on-visible',
+                '.animate-bounce-in',
+                '.animate-rotate-scale',
+                '.animate-bottom-zoom',
+                '.animate-fade-in',
+                '.animate-top-slide-zoom',
+                '.animate-scale-down-to-original'
+            ];
+
+            const animatedElements = document.querySelectorAll(animationClasses.join(', '));
+
+            // 在 DOM 加载完毕后，立即为所有动画元素添加基础动画起始状态类
+            // 确保它们在动画开始前是隐藏的，并处于正确的初始变形位置
+            // 使用 requestAnimationFrame 确保在浏览器下一次重绘前应用初始状态，减少闪烁 [1, 2]
+            requestAnimationFrame(() => { // [1, 2]
+                animatedElements.forEach(element => {
+                    element.classList.add('animated-element-base');
+                });
+            });
+
+
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.1 // 元素可见度达到10%时触发 [6, 7, 8]
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) { // 检查元素是否真正进入视口 [6, 9]
+                        const targetElement = entry.target;
+
+                        // 元素进入视口，立即移除其初始状态类，使其变为可见
+                        targetElement.classList.remove('animated-element-base');
+
+                        // *** 关键改动在这里：使用 requestAnimationFrame 延迟添加 is-visible 类 ***
+                        // 确保在浏览器下一次重绘前添加 is-visible 类，与显示器刷新率同步，消除闪烁和撕裂 [1, 2, 3]
+                        requestAnimationFrame(() => { // [1, 2, 3]
+                            targetElement.classList.add('is-visible');
+                        });
+
+                        // 动画一旦触发，就不再观察该元素
+                        observer.unobserve(targetElement); // [8]
+                    }
+                });
+            }, observerOptions);
+
+            // 观察每个需要动画的元素
+            animatedElements.forEach(element => {
+                observer.observe(element);
+            });
+        });
+    </script>
+</body>
+</html>

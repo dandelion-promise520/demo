@@ -6,7 +6,7 @@ const https = require('https');
 // 配置参数
 const API_URL = 'https://www.dmoe.cc/random.php';
 const INTERVAL_TIME = 5000; // 5秒
-const DOWNLOAD_DIR = path.join(__dirname, 'dmoe_images'); // 指定下载目录
+const DOWNLOAD_DIR = path.join(__dirname, 'images'); // 指定下载目录
 
 // 确保下载目录存在
 function ensureDirectoryExists(dirPath) {
@@ -19,7 +19,7 @@ function ensureDirectoryExists(dirPath) {
 // 下载图片的函数
 async function downloadImage(imageUrl) {
     const timestamp = new Date().getTime();
-    const filename = path.join(DOWNLOAD_DIR, `dmoe_${timestamp}.jpg`);
+    const filename = path.join(DOWNLOAD_DIR, `${timestamp}.jpg`);
 
     try {
         const response = await axios({
